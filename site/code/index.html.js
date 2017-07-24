@@ -131,31 +131,36 @@ A Java library for building GraphQL APIs.
 Code that executes a hello world GraphQL query with \`graphql-java\`:
 
 \`\`\`java
-import graphql.schema.GraphQLObjectType;
+import graphql.ExecutionResult;
+import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.StaticDataFetcher;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.SchemaGenerator;
+import graphql.schema.idl.SchemaParser;
+import graphql.schema.idl.TypeDefinitionRegistry;
 
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
+import static graphql.schema.idl.RuntimeWiring.newRuntimeWiring;
 
 public class HelloWorld {
 
     public static void main(String[] args) {
+        String schema = "type Query{hello: String} schema{query: Query}";
 
-        GraphQLObjectType queryType = newObject()
-                        .name("helloWorldQuery")
-                        .field(newFieldDefinition()
-                                .type(GraphQLString)
-                                .name("hello")
-                                .staticValue("world"))
-                        .build();
+        SchemaParser schemaParser = new SchemaParser();
+        TypeDefinitionRegistry typeDefinitionRegistry = schemaParser.parse(schema);
 
-        GraphQLSchema schema = GraphQLSchema.newSchema()
-                        .query(queryType)
-                        .build();
-        Map<String, Object> result = new GraphQL(schema).execute("{hello}").getData();
+        RuntimeWiring runtimeWiring = newRuntimeWiring()
+                .type("Query", builder -> builder.dataFetcher("hello", new StaticDataFetcher("world")))
+                .build();
 
-        System.out.println(result);
+        SchemaGenerator schemaGenerator = new SchemaGenerator();
+        GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
+
+        GraphQL build = GraphQL.newGraphQL(graphQLSchema).build();
+        ExecutionResult executionResult = build.execute("{hello}");
+
+        System.out.println(executionResult.getData().toString());
         // Prints: {hello=world}
     }
 }
@@ -365,6 +370,7 @@ Executor.execute(schema, query) map println
 ## GraphQL Clients
 
 - [C# / .NET](#c-net-1)
+- [Go](#go-1)
 - [Java / Android](#java-android)
 - [JavaScript](#javascript-1)
 - [Swift / Objective-C iOS](#swift-objective-c-ios)
@@ -372,6 +378,10 @@ Executor.execute(schema, query) map println
 ### C# / .NET
 
   - [graphql-net-client](https://github.com/bkniffler/graphql-net-client): Basic example GraphQL client for .NET.
+
+### Go
+
+  - [graphql](https://github.com/shurcooL/graphql#readme): A GraphQL client implementation in Go.
 
 ### Java / Android
 
@@ -381,7 +391,8 @@ Executor.execute(schema, query) map println
 
   - [Relay](https://facebook.github.io/relay/) ([github](https://github.com/facebook/relay)) ([npm](https://www.npmjs.com/package/react-relay)): Facebook's framework for building React applications that talk to a GraphQL backend.
   - [Apollo Client](http://dev.apollodata.com/react/) ([github](https://github.com/apollostack/apollo-client)): A powerful JavaScript GraphQL client, designed to work well with React, React Native, Angular 2, or just plain JavaScript.
-  - [Lokka](https://github.com/kadirahq/lokka): A simple JavaScript GraphQL client that works in all JavaScript environments - the browser, Node.js, and React Native.
+  - [graphql-request](https://github.com/graphcool/graphql-request): A simple and flexible JavaScript GraphQL client that works in all JavaScript environments (the browser, Node.js, and React Native) - basically a lightweight wrapper around \`fetch\`.
+  - [Lokka](https://github.com/kadirahq/lokka): A simple JavaScript GraphQL client that works in all JavaScript environments (the browser, Node.js, and React Native).
 
 ### Swift / Objective-C iOS
 
