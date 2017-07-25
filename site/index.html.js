@@ -432,7 +432,7 @@ type Person {
         {/*Illustration of each field becoming a function?]*/}
         <p>
           GraphQL 让你的整个应用共享一套 API，
-          而不用被限制于特定引擎。
+          而不用被限制于特定存储引擎。
           GraphQL 引擎已经有多种语言实现，
           通过 GraphQL API 能够更好利用你的现有数据和代码。
           你只需要为类型系统的字段编写函数，
