@@ -131,31 +131,36 @@ $ curl -XPOST "http://0:3000" -H'Content-Type: application/json' -d'{
 可以执行一个 \`hello world\` GraphQL 查询的 \`graphql-java\` 代码如下：
 
 \`\`\`java
-import graphql.schema.GraphQLObjectType;
+import graphql.ExecutionResult;
+import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.StaticDataFetcher;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.SchemaGenerator;
+import graphql.schema.idl.SchemaParser;
+import graphql.schema.idl.TypeDefinitionRegistry;
 
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
+import static graphql.schema.idl.RuntimeWiring.newRuntimeWiring;
 
 public class HelloWorld {
 
     public static void main(String[] args) {
+        String schema = "type Query{hello: String} schema{query: Query}";
 
-        GraphQLObjectType queryType = newObject()
-                        .name("helloWorldQuery")
-                        .field(newFieldDefinition()
-                                .type(GraphQLString)
-                                .name("hello")
-                                .staticValue("world"))
-                        .build();
+        SchemaParser schemaParser = new SchemaParser();
+        TypeDefinitionRegistry typeDefinitionRegistry = schemaParser.parse(schema);
 
-        GraphQLSchema schema = GraphQLSchema.newSchema()
-                        .query(queryType)
-                        .build();
-        Map<String, Object> result = new GraphQL(schema).execute("{hello}").getData();
+        RuntimeWiring runtimeWiring = newRuntimeWiring()
+                .type("Query", builder -> builder.dataFetcher("hello", new StaticDataFetcher("world")))
+                .build();
 
-        System.out.println(result);
+        SchemaGenerator schemaGenerator = new SchemaGenerator();
+        GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
+
+        GraphQL build = GraphQL.newGraphQL(graphQLSchema).build();
+        ExecutionResult executionResult = build.execute("{hello}");
+
+        System.out.println(executionResult.getData().toString());
         // Prints: {hello=world}
     }
 }
@@ -269,7 +274,7 @@ app.use('/graphiql', graphiqlExpress({endpointURL: '/graphql'}));
 app.listen(4000, () => console.log('Now browse to localhost:4000/graphiql'));
 \`\`\`
 
-GraphQL Server 也支持所有的 Node.js HTTP 服务器框架：Express，Connect，HAPI 和 Koa。
+GraphQL Server 也支持所有的 Node.js HTTP 服务器框架：Express、Connect、HAPI 和 Koa。
 
 ### PHP
 
@@ -365,6 +370,7 @@ Executor.execute(schema, query) map println
 ## GraphQL 客户端
 
 - [C# / .NET](#c-net-1)
+- [Go](#go-1)
 - [Java / Android](#java-android)
 - [JavaScript](#javascript-1)
 - [Swift / Objective-C iOS](#swift-objective-c-ios)
@@ -373,6 +379,10 @@ Executor.execute(schema, query) map println
 
   - [graphql-net-client](https://github.com/bkniffler/graphql-net-client)：基于 .Net 的 GraphQL 客户端基本样例。
 
+### Go
+
+  - [graphql](https://github.com/shurcooL/graphql#readme): 一个使用 Go 编写的 GraphQL 客户端实现。
+
 ### Java / Android
 
   - [Apollo Android](https://github.com/apollographql/apollo-android)：一个用于 Android 的 GraphQL 客户端，强类型、带缓存功能，使用 Java 编写。
@@ -380,7 +390,8 @@ Executor.execute(schema, query) map println
 ### JavaScript
 
   - [Relay](https://facebook.github.io/relay/) ([github](https://github.com/facebook/relay)) ([npm](https://www.npmjs.com/package/react-relay))：Facebook 的框架，用于构建与 GraphQL 后端交流的 React 应用。
-  - [Apollo Client](http://dev.apollodata.com/react/) ([github](https://github.com/apollostack/apollo-client))：一个强大的 JavaScript GraphQL 客户端，设计用于与 React，React Native，Angular 2 或者原生 JavaScript 一同工作。
+  - [Apollo Client](http://dev.apollodata.com/react/) ([github](https://github.com/apollostack/apollo-client))：一个强大的 JavaScript GraphQL 客户端，设计用于与 React、React Native、Angular 2 或者原生 JavaScript 一同工作。
+  - [graphql-request](https://github.com/graphcool/graphql-request)：个简单的弹性的 JavaScript GraphQL 客户端，可以运行于所有的 JavaScript 环境（浏览器，Node.js 和 React Native）—— 基本上是 \`fetch\` 的轻度封装。
   - [Lokka](https://github.com/kadirahq/lokka)：一个简单的 JavaScript GraphQL 客户端，可以运行于所有的 JavaScript 环境 —— 浏览器，Node.js 和 React Native。
 
 ### Swift / Objective-C iOS
@@ -392,7 +403,7 @@ Executor.execute(schema, query) map println
 
   - [graphiql](https://github.com/graphql/graphiql) ([npm](https://www.npmjs.com/package/graphiql))：一个交互式的运行于浏览器中的 GraphQL IDE.
   - [libgraphqlparser](https://github.com/graphql/libgraphqlparser)：一个 C++ 版 GraphQL 查询语言分析器，提供 C 和 C++ API。
-  - [Graphql Language Service](https://github.com/graphql/graphql-language-service)：一个用于构建 IDE 的 GraphQL 语言服务（诊断，自动完成等）的接口。
+  - [Graphql Language Service](https://github.com/graphql/graphql-language-service)：一个用于构建 IDE 的 GraphQL 语言服务（诊断、自动完成等）的接口。
 
 ## 更多内容
 
