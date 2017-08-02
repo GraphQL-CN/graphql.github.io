@@ -6,4 +6,4 @@ deploy:
   provider: script
   script: ./resources/publish.sh
   on:
-    branch: zh-Hans
+    branch: zh-cn
